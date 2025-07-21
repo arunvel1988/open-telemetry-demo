@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  flask-app:
+    build: ./app
+    ports:
+      - "5000:5000"
+    depends_on:
+      - otel-collector
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.128.0
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    ports:
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
+      - "9090:9090"   # Prometheus scrape
+    depends_on:
+      - jaeger
+      - prometheus
+      - opensearch
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "6831:6831/udp"
+      - "16686:16686"
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+
+  opensearch:
+    image: opensearchproject/opensearch:2.14.0
+    environment:
+      - discovery.type=single-node
+      - plugins.security.disabled=true
+    ports:
+      - "9200:9200"
+
+  grafana:
+    image: grafana/grafana:latest
+    depends_on:
+      - opensearch
+    environment:
+      - GF_INSTALL_PLUGINS=grafana-opensearch-datasource
+    ports:
+      - "3000:3000"
