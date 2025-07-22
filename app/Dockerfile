@@ -1,6 +1,13 @@
-FROM python:3.9-slim
+
+FROM python:3.10-slim
+
 WORKDIR /app
-COPY app.py . 
-RUN pip install flask opentelemetry-sdk opentelemetry-instrumentation-flask \
-    opentelemetry-exporter-otlp prometheus_flask_exporter
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY app.py .
+
+ENV OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
+
 CMD ["python", "app.py"]
