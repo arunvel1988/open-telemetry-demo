@@ -1,13 +1,5 @@
-
-FROM python:3.10-slim
-
+FROM python:3.11-slim
 WORKDIR /app
-
-COPY requirements.txt .
+COPY . .
 RUN pip install --no-cache-dir -r requirements.txt
-
-COPY app.py .
-
-ENV OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
-
-CMD ["python", "app.py"]
+CMD ["python", "main.py"]
