@@ -1,38 +1,31 @@
 receivers:
   otlp:
     protocols:
+      grpc:
       http:
 
 exporters:
-  jaeger:
-    endpoint: jaeger:14250
+  otlp:
+    endpoint: "jaeger:4317"   # Export traces to Jaeger collector via OTLP gRPC
     tls:
       insecure: true
 
   prometheus:
     endpoint: "0.0.0.0:8889"
 
-  opensearch:
-    endpoints: ["http://opensearch:9200"]
-    logs_index: "flask-logs"
-    insecure: true
-
-processors:
-  batch:
+  logging:
+    logLevel: debug
 
 service:
   pipelines:
     traces:
       receivers: [otlp]
-      processors: [batch]
-      exporters: [jaeger]
+      exporters: [otlp, logging]
 
     metrics:
       receivers: [otlp]
-      processors: [batch]
-      exporters: [prometheus]
+      exporters: [prometheus, logging]
 
     logs:
       receivers: [otlp]
-      processors: [batch]
-      exporters: [opensearch]
+      exporters: [logging]
