@@ -14,8 +14,8 @@ services:
     volumes:
       - ./otel-collector-config.yml:/etc/otel-collector-config.yml
     ports:
-      - "4318:4318"
-      - "8889:8889"
+      - "4318:4318"  # OTLP HTTP
+      - "8889:8889"  # Prometheus scrape
 
   jaeger:
     image: jaegertracing/all-in-one:latest
@@ -54,4 +54,3 @@ services:
       - "5601:5601"
     depends_on:
       - opensearch
-
